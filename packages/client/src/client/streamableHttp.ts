@@ -229,8 +229,13 @@ export class StreamableHTTPClientTransport implements Transport {
                         // Purposely _not_ awaited, so we don't call onerror twice
                         return this._startOrAuthSse(options);
                     }
+                    await response.text?.().catch(() => {});
+                    if (this._authRetryInFlight) {
+                        throw new SdkError(SdkErrorCode.ClientHttpAuthentication, 'Server returned 401 after re-authentication', {
+                            status: 401
+                        });
+                    }
                     if (this._authProvider) {
-                        await response.text?.().catch(() => {});
                         throw new UnauthorizedError();
                     }
                 }
@@ -514,8 +519,13 @@ export class StreamableHTTPClientTransport implements Transport {
                         // Purposely _not_ awaited, so we don't call onerror twice
                         return this.send(message);
                     }
+                    await response.text?.().catch(() => {});
+                    if (this._authRetryInFlight) {
+                        throw new SdkError(SdkErrorCode.ClientHttpAuthentication, 'Server returned 401 after re-authentication', {
+                            status: 401
+                        });
+                    }
                     if (this._authProvider) {
-                        await response.text?.().catch(() => {});
                         throw new UnauthorizedError();
                     }
                 }
